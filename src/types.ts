@@ -4,8 +4,8 @@ export interface User {
     avatarUrl: string;
     isPro: boolean;
   }
-  
-  export interface Offer {
+
+export interface Offer {
     title: string;
     description: string;
     date: string;
@@ -25,4 +25,3 @@ export interface User {
     latitude: number;
     longitude: number;
   }
-  
