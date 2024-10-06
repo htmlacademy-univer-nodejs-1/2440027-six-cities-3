@@ -1,67 +1,9 @@
 import fs from 'node:fs';
 import chalk from 'chalk';
-import { Offer } from '../types.js';
+import readline from 'node:readline';
 
-
-export function parseTSVLine(line: string): Offer | null {
-  const values = line.split('\t');
-  if (values.length !== 21) {
-    console.error(chalk.red('Ошибка: Неверное количество полей в строке.'));
-    return null;
-  }
-
-  const [
-    title,
-    description,
-    date,
-    city,
-    previewImage,
-    imagesStr,
-    isPremiumStr,
-    isFavoriteStr,
-    ratingStr,
-    type,
-    bedroomsStr,
-    maxAdultsStr,
-    priceStr,
-    goodsStr,
-    hostName,
-    hostEmail,
-    hostAvatarUrl,
-    hostIsProStr,
-    commentsCountStr,
-    latitudeStr,
-    longitudeStr,
-  ] = values;
-
-  const offer: Offer = {
-    title: title.replace(/(^"|"$)/g, ''),
-    description: description.replace(/(^"|"$)/g, ''),
-    date,
-    city: city.replace(/(^"|"$)/g, '') as Offer['city'],
-    previewImage,
-    images: imagesStr.split(';'),
-    isPremium: isPremiumStr === 'true',
-    isFavorite: isFavoriteStr === 'true',
-    rating: parseFloat(ratingStr),
-    type: type as Offer['type'],
-    bedrooms: parseInt(bedroomsStr, 10),
-    maxAdults: parseInt(maxAdultsStr, 10),
-    price: parseInt(priceStr, 10),
-    goods: goodsStr.split(';'),
-    host: {
-      name: hostName.replace(/(^"|"$)/g, ''),
-      email: hostEmail,
-      avatarUrl: hostAvatarUrl,
-      isPro: hostIsProStr === 'true',
-    },
-    commentsCount: parseInt(commentsCountStr, 10),
-    latitude: parseFloat(latitudeStr),
-    longitude: parseFloat(longitudeStr),
-  };
-
-  return offer;
-}
+import { parseTSVLine } from './parse-line.js';
+import { generateOffers } from './generate-offers.js';
 
 
 export function runCli(args: string[]): void {
@@ -92,31 +34,39 @@ export function runCli(args: string[]): void {
         throw new Error('File not found error. Please specify correct file');
       }
 
-      fs.readFile(filePath, 'utf-8', (err, data) => {
-        if (err) {
-          console.error(chalk.red(`Ошибка при чтении файла: ${err.message}`));
-          throw new Error('Error reading the file.');
+      const readStream = fs.createReadStream(filePath);
+      const rl = readline.createInterface({ input: readStream });
+
+      rl.on('line', (line: string) => {
+        const offer = parseTSVLine(line);
+        if (!offer){
+          console.log('Failed to parse line');
         }
+      });
 
-        const lines = data.trim().split('\n');
-        const offers: Offer[] = [];
+      rl.on('close', () => {
+        console.log(chalk.green('Импорт данных завершён.'));
+      });
 
-        for (const line of lines) {
-          const offer = parseTSVLine(line);
-          if (offer) {
-            offers.push(offer);
-          }
-        }
-
-        console.log(chalk.green(`Импортировано предложений: ${offers.length}`));
-        console.log(offers);
+      rl.on('error', (err: Error) => {
+        console.error(chalk.red(`Ошибка при чтении файла: ${err.message}`));
       });
       break;
     }
 
-    case '--generate':
-      console.log(chalk.red('Команда --generate ещё не реализована.'));
+    case '--generate':{
+      const n = parseInt(args[1], 10);
+      const filepath = args[2];
+      const url = args[3];
+
+      if (!n || !filepath || !url) {
+        console.error(chalk.red('Пожалуйста, укажите все необходимые аргументы: <n> <path> <url>'));
+        throw new Error('Missing arguments for generate command');
+      }
+
+      generateOffers(n, filepath, url);
       break;
+    }
 
     default:
       console.log(chalk.red('Неизвестная команда. Используйте --help для списка доступных команд.'));
