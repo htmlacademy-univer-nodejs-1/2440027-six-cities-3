@@ -7,14 +7,18 @@
     "api",
     "node.js"
   ],
-  "main": "main.js",
+  "main": "dist/main.js",
   "scripts": {
     "start": "npm run build && node ./dist/main.js",
     "build": "npm run clean && npm run compile",
     "lint": "eslint src/ --ext .ts",
     "compile": "tsc -p tsconfig.json",
     "clean": "rimraf dist",
-    "ts": "ts-node"
+    "dev": "ts-node src/main.ts"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "tslib": "^2.7.0"
   },
   "devDependencies": {
     "@types/node": "18.17.17",
@@ -26,7 +30,6 @@
     "ts-node": "10.9.1",
     "typescript": "5.2.2"
   },
-  "type": "module",
   "engines": {
     "node": "^18.0.0",
     "npm": ">=8"
