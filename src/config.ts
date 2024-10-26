@@ -1,11 +1,10 @@
 import convict from 'convict';
-// eslint-disable-next-line camelcase
-import convict_format_with_validator from 'convict-format-with-validator';
+import ipaddress from 'convict-format-with-validator';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-convict.addFormats(convict_format_with_validator);
+convict.addFormats(ipaddress);
 
 const config = convict({
   port: {
