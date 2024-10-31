@@ -25,6 +25,12 @@ const config = convict({
     default: undefined,
     env: 'SALT',
   },
+  dbUri: {
+    doc: 'MongoDB URI',
+    format: String,
+    default: 'mongodb://localhost:8081/database',
+    env: 'DB_URI',
+  },
 });
 
 config.validate({ allowed: 'strict' });

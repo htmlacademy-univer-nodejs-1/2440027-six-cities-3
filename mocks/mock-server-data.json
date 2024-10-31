@@ -3,7 +3,7 @@
     {
       "title": "Amazing apartment in Paris",
       "description": "A beautiful apartment located in the center of Paris.",
-      "date": "2024-10-06",
+      "publicationDate": "2024-10-06",
       "city": "Paris",
       "previewImage": "img/apartment-01.jpg",
       "images": ["img/apartment-01.jpg", "img/apartment-02.jpg"],
@@ -15,7 +15,7 @@
       "maxAdults": 4,
       "price": 120,
       "goods": ["Heating", "Kitchen", "Cable TV"],
-      "host": {
+      "author": {
         "name": "Alice",
         "email": "alice@example.com",
         "avatarUrl": "img/avatar-alice.jpg",
@@ -28,7 +28,7 @@
     {
         "title": "Decent apartment in Cologne",
         "description": "A beautiful apartment located in the center of Cologne.",
-        "date": "2024-10-06",
+        "publicationDate": "2024-10-06",
         "city": "Cologne",
         "previewImage": "img/apartment-01.jpg",
         "images": ["img/apartment-01.jpg", "img/apartment-02.jpg"],
@@ -40,7 +40,7 @@
         "maxAdults": 4,
         "price": 120,
         "goods": ["Heating", "Kitchen", "Cable TV"],
-        "host": {
+        "author": {
           "name": "Bob",
           "email": "bob@example.com",
           "avatarUrl": "img/avatar-bob.jpg",
@@ -53,7 +53,7 @@
       {
         "title": "Lux apartment in Brussels",
         "description": "A beautiful apartment located in the center of Brussels.",
-        "date": "2024-10-06",
+        "publicationDate": "2024-10-06",
         "city": "Brussels",
         "previewImage": "img/apartment-01.jpg",
         "images": ["img/apartment-01.jpg", "img/apartment-02.jpg"],
@@ -65,7 +65,7 @@
         "maxAdults": 4,
         "price": 190,
         "goods": ["Heating", "Kitchen", "Cable TV"],
-        "host": {
+        "author": {
           "name": "Frank",
           "email": "frank@example.com",
           "avatarUrl": "img/avatar-frank.jpg",
@@ -78,7 +78,7 @@
       {
         "title": "Lux apartment in Amsterdam",
         "description": "A beautiful apartment located in the center of Amsterdam.",
-        "date": "2024-10-06",
+        "publicationDate": "2024-10-06",
         "city": "Amsterdam",
         "previewImage": "img/apartment-01.jpg",
         "images": ["img/apartment-01.jpg", "img/apartment-02.jpg"],
@@ -90,7 +90,7 @@
         "maxAdults": 4,
         "price": 544,
         "goods": ["Heating", "Kitchen", "Cable TV"],
-        "host": {
+        "author": {
           "name": "Sheldon",
           "email": "sheldon@example.com",
           "avatarUrl": "img/avatar-sheldon.jpg",
@@ -103,7 +103,7 @@
       {
         "title": "Apartment in Hamburg",
         "description": "A beautiful apartment located in the center of Hamburg.",
-        "date": "2024-10-06",
+        "publicationDate": "2024-10-06",
         "city": "Hamburg",
         "previewImage": "img/apartment-01.jpg",
         "images": ["img/apartment-01.jpg", "img/apartment-02.jpg"],
@@ -115,7 +115,7 @@
         "maxAdults": 14,
         "price": 100,
         "goods": ["Kitchen"],
-        "host": {
+        "author": {
           "name": "Arnold",
           "email": "arnold@example.com",
           "avatarUrl": "img/avatar-arnold.jpg",

@@ -5,14 +5,21 @@ import { inject, injectable } from 'inversify';
 import { parseTSVLine } from './parse-line.js';
 import { generateOffers } from './generate-offers.js';
 import { LoggerInterface } from '../logger/logger-interface.js';
+import { DatabaseInterface } from '../database/database-interface.js';
+import { OfferServiceInterface } from '../services/offer-service-interface.js';
+import { UserServiceInterface } from '../services/user-service-interface.js';
+import { OfferDocument } from '../models/offer.model.js';
 
 @injectable()
 export class CliService {
   constructor(
-    @inject('LoggerInterface') private logger: LoggerInterface
+    @inject('LoggerInterface') private logger: LoggerInterface,
+    @inject('DatabaseInterface') private database: DatabaseInterface,
+    @inject('UserServiceInterface') private userService: UserServiceInterface,
+    @inject('OfferServiceInterface') private offerService: OfferServiceInterface
   ) {}
 
-  public runCli(args: string[]): void {
+  public async runCli(args: string[]): Promise<void> {
     const command = args[0];
 
     switch (command) {
@@ -35,28 +42,63 @@ export class CliService {
 
       case '--import': {
         const filePath = args[1];
-        if (!filePath) {
-          this.logger.error(chalk.red('Пожалуйста, укажите путь к файлу.'));
-          throw new Error('File not found error. Please specify correct file');
+        const dbUri = args[2];
+        if (!filePath || !dbUri) {
+          this.logger.error(chalk.red('Пожалуйста, укажите путь к файлу и строку подключения к бд'));
+          throw new Error('Не указаны необходимые аргументы');
         }
+
+        await this.database.connect(dbUri);
 
         const readStream = fs.createReadStream(filePath);
         const rl = readline.createInterface({ input: readStream });
 
-        rl.on('line', (line: string) => {
-          const offer = parseTSVLine(line);
-          if (!offer){
-            this.logger.info('Failed to parse line');
+        for await (const line of rl) {
+          const offerData = parseTSVLine(line);
+          if (!offerData) {
+            this.logger.info('Не удалось разобрать строку.');
+            continue;
           }
-        });
 
-        rl.on('close', () => {
-          this.logger.info(chalk.green('Импорт данных завершён.'));
-        });
+          let user = await this.userService.findByEmail(offerData.author.email);
+          if (!user) {
+            user = await this.userService.create({
+              name: offerData.author.name,
+              email: offerData.author.email,
+              avatarUrl: offerData.author.avatarUrl,
+              userType: offerData.author.isPro ? 'pro' : 'regular',
+              password: offerData.author.password || 'default_password',
+            });
+          }
 
-        rl.on('error', (err: Error) => {
-          this.logger.error(chalk.red(`Ошибка при чтении файла: ${err.message}`));
-        });
+          const offerForDb = {
+            title: offerData.title,
+            description: offerData.description,
+            publicationDate: new Date(offerData.publicationDate),
+            city: offerData.city,
+            previewImage: offerData.previewImage,
+            images: offerData.images,
+            isPremium: offerData.isPremium,
+            isFavorite: offerData.isFavorite,
+            rating: offerData.rating,
+            type: offerData.type,
+            bedrooms: offerData.bedrooms,
+            maxAdults: offerData.maxAdults,
+            price: offerData.price,
+            goods: offerData.goods,
+            author: user._id,
+            location: {
+              latitude: offerData.latitude,
+              longitude: offerData.longitude,
+            },
+          };
+
+          await this.offerService.create(offerForDb as OfferDocument);
+        }
+
+        this.logger.info(chalk.green('Импорт данных завершён.'));
+        await this.database.disconnect();
+
         break;
       }
 
