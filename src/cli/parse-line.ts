@@ -11,7 +11,7 @@ export function parseTSVLine(line: string): Offer | null {
   const [
     title,
     description,
-    date,
+    publicationDate,
     city,
     previewImage,
     imagesStr,
@@ -35,7 +35,7 @@ export function parseTSVLine(line: string): Offer | null {
   const offer: Offer = {
     title: title.replace(/(^"|"$)/g, ''),
     description: description.replace(/(^"|"$)/g, ''),
-    date,
+    publicationDate,
     city: city.replace(/(^"|"$)/g, '') as Offer['city'],
     previewImage,
     images: imagesStr.split(';'),
@@ -47,11 +47,13 @@ export function parseTSVLine(line: string): Offer | null {
     maxAdults: parseInt(maxAdultsStr, 10),
     price: parseInt(priceStr, 10),
     goods: goodsStr.split(';'),
-    host: {
+    author: {
       name: hostName.replace(/(^"|"$)/g, ''),
       email: hostEmail,
       avatarUrl: hostAvatarUrl,
       isPro: hostIsProStr === 'true',
+      password: '1234567',
+      userType: hostIsProStr === 'true' ? 'pro' : 'regular',
     },
     commentsCount: parseInt(commentsCountStr, 10),
     latitude: parseFloat(latitudeStr),
