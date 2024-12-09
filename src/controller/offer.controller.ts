@@ -1,22 +1,44 @@
-import { Router, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { Controller } from '../controller/controller.js';
-import asyncHandler from 'express-async-handler';
 import { OfferServiceInterface } from '../services/offer-service-interface.js';
 import { inject, injectable } from 'inversify';
-import userModel from '../models/user.model.js';
+import { CreateOfferDTO, UpdateOfferDTO } from '../dtos/offer.js';
+import { ObjectIdMiddleware } from '../middleware/objectid.middleware.js';
+import { ValidateDtoMiddleware } from '../middleware/validate-dto.middleware.js';
 
 @injectable()
 export class OfferController extends Controller {
-  public readonly router: Router;
-
   constructor(
     @inject('OfferServiceInterface') private offerService: OfferServiceInterface
   ) {
     super();
-    this.router = Router();
+    this.addRoute({
+      path: '/:id',
+      method: 'get',
+      handler: this.getOfferById,
+      middlewares: []
+    });
 
-    this.router.get('/:id', asyncHandler(this.getOffers.bind(this)));
-    this.router.post('/', asyncHandler(this.createOffer.bind(this)));
+    this.addRoute({
+      path: '/',
+      method: 'get',
+      handler: this.getOffers,
+      middlewares: []
+    });
+
+    this.addRoute({
+      path: '/',
+      method: 'post',
+      handler: this.createOffer,
+      middlewares: [new ValidateDtoMiddleware(CreateOfferDTO), new ObjectIdMiddleware('authorId')]
+    });
+
+    this.addRoute({
+      path: '/:offerId',
+      method: 'patch',
+      handler: this.updateOffer,
+      middlewares: [new ObjectIdMiddleware('offerId'), new ValidateDtoMiddleware(UpdateOfferDTO)]
+    });
   }
 
   private async getOffers(_req: Request, res: Response) {
@@ -24,13 +46,29 @@ export class OfferController extends Controller {
     this.ok(res, offers);
   }
 
+  private async getOfferById(req: Request, res: Response) {
+    const offer = await this.offerService.findById(req.body.id);
+    this.ok(res, offer);
+  }
+
   private async createOffer(req: Request, res: Response) {
     const offer = {
       ...req.body,
       publicationDate: new Date(),
-      author: new userModel(), // TODO remove later
+      author: req.body.authorId
+      // author: new userModel(), // TODO remove later
     };
     const newOffer = await this.offerService.create(offer);
     this.created(res, newOffer);
   }
+
+  private async updateOffer(req: Request, res: Response) {
+    const offer = {
+      ...req.body,
+      publicationDate: new Date(),
+    };
+    const updatedOffer = await this.offerService.update(offer.id, offer);
+    this.ok(res, updatedOffer);
+  }
+
 }

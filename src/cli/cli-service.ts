@@ -8,6 +8,8 @@ import { LoggerInterface } from '../logger/logger-interface.js';
 import { DatabaseInterface } from '../database/database-interface.js';
 import { OfferServiceInterface } from '../services/offer-service-interface.js';
 import { UserServiceInterface } from '../services/user-service-interface.js';
+import { UserType } from '../dtos/user.js';
+import { GoodType } from '../dtos/offer.js';
 
 @injectable()
 export class CliService {
@@ -65,7 +67,7 @@ export class CliService {
               name: offerData.author.name,
               email: offerData.author.email,
               avatarUrl: offerData.author.avatarUrl,
-              userType: offerData.author.isPro ? 'pro' : 'regular',
+              userType: offerData.author.isPro ? UserType.Pro : UserType.Regular,
               password: offerData.author.password || 'default_password',
             });
           }
@@ -84,7 +86,7 @@ export class CliService {
             bedrooms: offerData.bedrooms,
             maxAdults: offerData.maxAdults,
             price: offerData.price,
-            goods: offerData.goods,
+            goods: offerData.goods as GoodType[],
             authorId: user.id.toString(),
             location: {
               latitude: offerData.latitude,

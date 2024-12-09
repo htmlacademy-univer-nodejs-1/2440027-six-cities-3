@@ -10,6 +10,8 @@ import { OfferServiceInterface } from './services/offer-service-interface.js';
 import { OfferService } from './services/offer.service.js';
 import { UserServiceInterface } from './services/user-service-interface.js';
 import { UserService } from './services/user.service.js';
+import { CommentServiceInterface } from './services/comment-service-interface.js';
+import { CommentService } from './services/comment.service.js';
 
 const container = new Container();
 
@@ -19,5 +21,7 @@ container.bind<CliService>(CliService).toSelf();
 container.bind<DatabaseInterface>('DatabaseInterface').to(MongoDatabaseService).inSingletonScope();
 container.bind<UserServiceInterface>('UserServiceInterface').to(UserService).inSingletonScope();
 container.bind<OfferServiceInterface>('OfferServiceInterface').to(OfferService).inSingletonScope();
+container.bind<CommentServiceInterface>('CommentServiceInterface').to(CommentService).inSingletonScope();
+
 
 export default container;

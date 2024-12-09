@@ -1,3 +1,5 @@
+import { GoodType } from './dtos/offer.js';
+
 export interface User {
   name: string;
   email: string;
@@ -21,7 +23,7 @@ export interface Offer {
   bedrooms: number;
   maxAdults: number;
   price: number;
-  goods: string[];
+  goods: GoodType[];
   author: User;
   commentsCount: number;
   latitude: number;

@@ -1,7 +1,35 @@
-import { Response } from 'express';
+import { Request, Router, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { MiddlewareInterface } from '../middleware/middleware-interface.js';
+import asyncHandler from 'express-async-handler';
+
+type HttpMethod = 'get' | 'post' | 'put' | 'delete' | 'patch';
+
+interface RouteDefinition {
+  path: string;
+  method: HttpMethod;
+  handler: (req: Request, res: Response) => Promise<void>;
+  middlewares?: MiddlewareInterface[];
+}
 
 export abstract class Controller {
+  protected router: Router;
+
+  constructor() {
+    this.router = Router();
+  }
+
+  public getRouter(): Router {
+    return this.router;
+  }
+
+  protected addRoute({ path, method, handler, middlewares = [] }: RouteDefinition) {
+    const routeHandler = asyncHandler(handler.bind(this));
+    const chain = middlewares.map((m) => m.execute.bind(m));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.router as any)[method](path, ...chain, routeHandler);
+  }
+
   protected send(res: Response, statusCode: number, data?: unknown): void {
     res.status(statusCode).json(data);
   }
@@ -38,3 +66,4 @@ export abstract class Controller {
     this.send(res, StatusCodes.CONFLICT, {error: message});
   }
 }
+

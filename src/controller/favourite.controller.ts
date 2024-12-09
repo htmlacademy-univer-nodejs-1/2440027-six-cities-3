@@ -1,18 +1,24 @@
-// import { Router, Request, Response } from 'express';
-import { Router } from 'express';
+import { Request, Response } from 'express';
 
 import { Controller } from '../controller/controller.js';
-// import asyncHandler from 'express-async-handler';
 import { injectable } from 'inversify';
+import { AddFavoriteDTO } from '../dtos/favourite.js';
+import { ObjectIdMiddleware } from '../middleware/objectid.middleware.js';
+import { ValidateDtoMiddleware } from '../middleware/validate-dto.middleware.js';
 
 @injectable()
 export class FavoriteController extends Controller {
-  public readonly router: Router;
-
   constructor(
   ) {
     super();
-    this.router = Router();
+    // this.router = Router();
+
+    this.addRoute({
+      path: '/',
+      method: 'post',
+      handler: this.addFavorite,
+      middlewares: [new ValidateDtoMiddleware(AddFavoriteDTO), new ObjectIdMiddleware('offerId')]
+    });
 
     // this.router.get('/', asyncHandler(this.getFavorites.bind(this)));
     // this.router.post('/:offerId', asyncHandler(this.addFavorite.bind(this)));
@@ -28,11 +34,12 @@ export class FavoriteController extends Controller {
   //     this.ok(res, offers);
   //   }
 
-  //   private async addFavorite(req: Request, res: Response) {
-  //     const userId = req.user?.id;
-  //     if (!userId) {
-  //       return this.unauthorized(res, 'Not authenticated');
-  //     }
+  private async addFavorite(_req: Request, res: Response) {
+    const userId = 'req.user?.id';
+    if (!userId) {
+      return this.unauthorized(res, 'Not authenticated');
+    }
+  }
 
   //     const { offerId } = req.params;
   //     await this.favoriteService.addFavorite(userId, offerId);
