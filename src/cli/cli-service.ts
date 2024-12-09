@@ -8,7 +8,6 @@ import { LoggerInterface } from '../logger/logger-interface.js';
 import { DatabaseInterface } from '../database/database-interface.js';
 import { OfferServiceInterface } from '../services/offer-service-interface.js';
 import { UserServiceInterface } from '../services/user-service-interface.js';
-import { OfferDocument } from '../models/offer.model.js';
 
 @injectable()
 export class CliService {
@@ -86,14 +85,14 @@ export class CliService {
             maxAdults: offerData.maxAdults,
             price: offerData.price,
             goods: offerData.goods,
-            author: user._id,
+            authorId: user.id.toString(),
             location: {
               latitude: offerData.latitude,
               longitude: offerData.longitude,
             },
           };
 
-          await this.offerService.create(offerForDb as OfferDocument);
+          await this.offerService.create(offerForDb);
         }
 
         this.logger.info(chalk.green('Импорт данных завершён.'));
