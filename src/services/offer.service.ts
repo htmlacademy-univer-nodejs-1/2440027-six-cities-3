@@ -1,20 +1,3 @@
-// import { OfferServiceInterface } from './offer-service-interface.js';
-// import OfferModel, { OfferDocument } from '../models/offer.model.js';
-// import { injectable } from 'inversify';
-
-// @injectable()
-// export class OfferService implements OfferServiceInterface {
-//   public async findById(id: string): Promise<OfferDocument | null> {
-//     return OfferModel.findById(id).exec();
-//   }
-
-//   public async create(offerData: Partial<OfferDocument>): Promise<OfferDocument> {
-//     const offer = new OfferModel(offerData);
-//     return offer.save();
-//   }
-// }
-
-
 import { OfferServiceInterface } from './offer-service-interface.js';
 import OfferModel, { OfferDocument } from '../models/offer.model.js';
 import CommentModel from '../models/comment.model.js';
@@ -24,20 +7,39 @@ import { UpdateOfferDTO } from '../dtos/offer.js';
 
 @injectable()
 export class OfferService implements OfferServiceInterface {
-  update(_id: string, _dto: UpdateOfferDTO): Promise<OfferDocument | null> {
-    throw new Error('Method not implemented.');
+  public async update(id: string, dto: UpdateOfferDTO): Promise<OfferDocument | null> {
+    return OfferModel.findByIdAndUpdate(id, dto, { new: true }).exec();
   }
 
-  deleteById(_id: string): Promise<void> {
-    throw new Error('Method not implemented.');
+  public async deleteById(id: string): Promise<void> {
+    await OfferModel.findByIdAndDelete(id).exec();
   }
 
-  findAll(_limit?: number, _city?: string, _sortByDate?: boolean): Promise<OfferDocument[]> {
-    throw new Error('Method not implemented.');
+  public async findAll(limit?: number, city?: string, sortByDate?: boolean): Promise<OfferDocument[]> {
+    const query = OfferModel.find();
+
+    if (city) {
+      query.where('city').equals(city);
+    }
+
+    if (sortByDate) {
+      query.sort({ publicationDate: -1 });
+    }
+
+    if (limit) {
+      query.limit(limit);
+    } else {
+      query.limit(60);
+    }
+
+    return query.exec();
   }
 
-  findPremiumByCity(_city: string): Promise<OfferDocument[]> {
-    throw new Error('Method not implemented.');
+  public async findPremiumByCity(city: string): Promise<OfferDocument[]> {
+    return OfferModel.find({ city, isPremium: true })
+      .sort({ publicationDate: -1 })
+      .limit(3)
+      .exec();
   }
 
   public async findById(id: string): Promise<OfferDocument | null> {

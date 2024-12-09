@@ -28,7 +28,7 @@ const config = convict({
   dbUri: {
     doc: 'MongoDB URI',
     format: String,
-    default: 'mongodb://localhost:8081/database',
+    default: 'mongodb://localhost:27017/database',
     env: 'DB_URI',
   },
 });
