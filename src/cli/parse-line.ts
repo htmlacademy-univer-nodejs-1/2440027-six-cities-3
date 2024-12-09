@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import { Offer } from '../types.js';
+import { GoodType } from '../dtos/offer.js';
 
 export function parseTSVLine(line: string): Offer | null {
   const values = line.split('\t');
@@ -46,7 +47,7 @@ export function parseTSVLine(line: string): Offer | null {
     bedrooms: parseInt(bedroomsStr, 10),
     maxAdults: parseInt(maxAdultsStr, 10),
     price: parseInt(priceStr, 10),
-    goods: goodsStr.split(';'),
+    goods: goodsStr.split(';') as GoodType[],
     author: {
       name: hostName.replace(/(^"|"$)/g, ''),
       email: hostEmail,

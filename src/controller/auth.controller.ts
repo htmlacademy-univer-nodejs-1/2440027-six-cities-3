@@ -1,8 +1,9 @@
 import { Router, Request, Response } from 'express';
 import { Controller } from '../controller/controller.js';
-import asyncHandler from 'express-async-handler';
 import { AuthServiceInterface } from '../services/auth-service-interface.js';
 import { inject, injectable } from 'inversify';
+import { LoginDTO } from '../dtos/auth.js';
+import { ValidateDtoMiddleware } from '../middleware/validate-dto.middleware.js';
 
 @injectable()
 export class AuthController extends Controller {
@@ -14,9 +15,25 @@ export class AuthController extends Controller {
     super();
     this.router = Router();
 
-    this.router.post('/login', asyncHandler(this.login.bind(this)));
-    this.router.post('/logout', asyncHandler(this.logout.bind(this)));
-    this.router.get('/status', asyncHandler(this.status.bind(this)));
+    this.addRoute({
+      path: '/login',
+      method: 'post',
+      handler: this.login,
+      middlewares: [new ValidateDtoMiddleware(LoginDTO)]
+    });
+    this.addRoute({
+      path: '/logout',
+      method: 'post',
+      handler: this.logout,
+      middlewares: []
+    });
+    this.addRoute({
+      path: '/status',
+      method: 'get',
+      handler: this.status,
+      middlewares: []
+    });
+
   }
 
   private async login(req: Request, res: Response) {

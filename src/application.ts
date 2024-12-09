@@ -10,6 +10,8 @@ import { UserService } from './services/user.service.js';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yaml';
 import fs from 'node:fs';
+import { CommentController } from './controller/comment.controller.js';
+import { CommentService } from './services/comment.service.js';
 
 
 @injectable()
@@ -17,17 +19,20 @@ export class Application {
   private expressApp: Express;
   private offerController: OfferController;
   private userController: UserController;
+  private commentController: CommentController;
 
   constructor(
     @inject('LoggerInterface') private logger: LoggerInterface,
     @inject('DatabaseInterface') private database: DatabaseInterface,
     @inject('OfferServiceInterface') private offerService: OfferService,
-    @inject('UserServiceInterface') private userService: UserService
+    @inject('UserServiceInterface') private userService: UserService,
+    @inject('CommentServiceInterface') private commentService: CommentService
   ) {
     this.expressApp = express();
 
     this.offerController = new OfferController(this.offerService);
     this.userController = new UserController(this.userService);
+    this.commentController = new CommentController(this.commentService);
   }
 
   private registerMiddlewares() {
@@ -35,8 +40,10 @@ export class Application {
   }
 
   private registerRoutes() {
-    this.expressApp.use('/offers', this.offerController.router);
-    this.expressApp.use('/users', this.userController.router);
+    this.expressApp.use('/offers', this.offerController.getRouter());
+    this.expressApp.use('/users', this.userController.getRouter());
+    this.expressApp.use('/', this.commentController.getRouter()); //  /offers/:offerId/comments
+
 
     const yamlFile = fs.readFileSync('./specification/specification.yml', 'utf8');
     const swaggerDocument = YAML.parse(yamlFile);
