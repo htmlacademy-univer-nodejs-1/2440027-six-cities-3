@@ -5,6 +5,7 @@ export interface Comment extends Document {
   publicationDate: Date;
   rating: number;
   author: Types.ObjectId;
+  offer: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -15,6 +16,7 @@ const commentSchema = new Schema<Comment>(
     publicationDate: { type: Date, required: true },
     rating: { type: Number, required: true, min: 1, max: 5 },
     author: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    offer: { type: Schema.Types.ObjectId, ref: 'Offer', required: true } // ссылка на оффер
   },
   { timestamps: true }
 );
