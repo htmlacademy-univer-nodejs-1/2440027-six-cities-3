@@ -12,6 +12,7 @@ import YAML from 'yaml';
 import fs from 'node:fs';
 import { CommentController } from './controller/comment.controller.js';
 import { CommentService } from './services/comment.service.js';
+import path from 'node:path';
 
 
 @injectable()
@@ -32,7 +33,7 @@ export class Application {
 
     this.offerController = new OfferController(this.offerService);
     this.userController = new UserController(this.userService);
-    this.commentController = new CommentController(this.commentService);
+    this.commentController = new CommentController(this.commentService, this.offerService);
   }
 
   private registerMiddlewares() {
@@ -52,6 +53,11 @@ export class Application {
 
   }
 
+  private registerStatic() {
+    const uploadsDir = config.get('uploadsDirectory');
+    this.expressApp.use('/static', express.static(path.resolve(uploadsDir)));
+  }
+
   public async init() {
     const port = config.get('port');
     this.logger.info(`Приложение запустилось; порт сервера ${port}`);
@@ -61,6 +67,7 @@ export class Application {
 
     this.registerMiddlewares();
     this.registerRoutes();
+    this.registerStatic();
 
     this.expressApp.listen(port, () => {
       this.logger.info(`Сервер запущен на порту ${port}`);

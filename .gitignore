@@ -11,3 +11,4 @@ coverage
 *.log
 gen-test.tsv
 .env
+/uploads

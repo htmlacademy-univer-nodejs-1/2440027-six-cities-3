@@ -80,7 +80,6 @@ export class CreateOfferDTO {
 
   @IsArray()
   @IsString({ each: true })
-  // хотя ТЗ говорит "один или несколько", проверим хотя бы один
   @ArrayMinSize(1)
     goods!: GoodType[];
 

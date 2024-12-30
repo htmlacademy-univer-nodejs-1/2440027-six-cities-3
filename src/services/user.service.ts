@@ -16,5 +16,13 @@ export class UserService implements UserServiceInterface {
     const user = new UserModel(userData);
     return user.save();
   }
+
+  public async updateAvatar(userId: string, avatarPath: string): Promise<UserDocument | null> {
+    return UserModel.findByIdAndUpdate(
+      userId,
+      { avatarUrl: avatarPath },
+      { new: true }
+    ).exec();
+  }
 }
 

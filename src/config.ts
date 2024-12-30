@@ -31,6 +31,12 @@ const config = convict({
     default: 'mongodb://localhost:27017/database',
     env: 'DB_URI',
   },
+  uploadsDirectory: {
+    doc: 'Путь к директории, где хранятся загружаемые файлы',
+    format: String,
+    default: 'uploads',
+    env: 'UPLOADS_DIRECTORY'
+  },
 });
 
 config.validate({ allowed: 'strict' });
