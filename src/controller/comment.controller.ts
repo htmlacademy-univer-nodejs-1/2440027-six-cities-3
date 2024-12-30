@@ -5,25 +5,28 @@ import { CommentServiceInterface } from '../services/comment-service-interface.j
 import { CreateCommentDTO } from '../dtos/comment.js';
 import { ObjectIdMiddleware } from '../middleware/objectid.middleware.js';
 import { ValidateDtoMiddleware } from '../middleware/validate-dto.middleware.js';
+import { CheckEntityExistsMiddleware } from '../middleware/check-entity-exists.middleware.js';
+import { OfferServiceInterface } from '../services/offer-service-interface.js';
 
 @injectable()
 export class CommentController extends Controller {
   constructor(
-    @inject('CommentServiceInterface') private commentService: CommentServiceInterface
+    @inject('CommentServiceInterface') private commentService: CommentServiceInterface,
+    @inject('OfferServiceInterface') private offerService: OfferServiceInterface
   ) {
     super();
     this.addRoute({
       path: '/offers/:offerId/comments',
       method: 'get',
       handler: this.index,
-      middlewares: [new ObjectIdMiddleware('offerId')]
+      middlewares: [new ObjectIdMiddleware('offerId'), new CheckEntityExistsMiddleware('offerId', this.offerService, 'Offer')]
     });
 
     this.addRoute({
       path: '/offers/:offerId/comments',
       method: 'post',
       handler: this.create,
-      middlewares: [new ObjectIdMiddleware('offerId'), new ValidateDtoMiddleware(CreateCommentDTO)]
+      middlewares: [new ObjectIdMiddleware('offerId'), new CheckEntityExistsMiddleware('offerId', this.offerService, 'Offer'), new ValidateDtoMiddleware(CreateCommentDTO)]
     });
   }
 
