@@ -13,6 +13,8 @@ export class OfferService implements OfferServiceInterface {
 
   public async deleteById(id: string): Promise<void> {
     await OfferModel.findByIdAndDelete(id).exec();
+
+    await CommentModel.deleteMany({ offer: id }).exec();
   }
 
   public async findAll(limit?: number, city?: string, sortByDate?: boolean): Promise<OfferDocument[]> {

@@ -12,6 +12,10 @@ import { UserServiceInterface } from './services/user-service-interface.js';
 import { UserService } from './services/user.service.js';
 import { CommentServiceInterface } from './services/comment-service-interface.js';
 import { CommentService } from './services/comment.service.js';
+import { FavoriteServiceInterface } from './services/favourite-service-interface.js';
+import { FavoriteService } from './services/favourite.service.js';
+import { AuthServiceInterface } from './services/auth-service-interface.js';
+import { AuthService } from './services/auth.service.js';
 
 const container = new Container();
 
@@ -22,6 +26,7 @@ container.bind<DatabaseInterface>('DatabaseInterface').to(MongoDatabaseService).
 container.bind<UserServiceInterface>('UserServiceInterface').to(UserService).inSingletonScope();
 container.bind<OfferServiceInterface>('OfferServiceInterface').to(OfferService).inSingletonScope();
 container.bind<CommentServiceInterface>('CommentServiceInterface').to(CommentService).inSingletonScope();
-
+container.bind<FavoriteServiceInterface>('FavoriteServiceInterface').to(FavoriteService).inSingletonScope();
+container.bind<AuthServiceInterface>('AuthServiceInterface').to(AuthService).inSingletonScope();
 
 export default container;

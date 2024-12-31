@@ -5,11 +5,14 @@ import { inject, injectable } from 'inversify';
 import { CreateOfferDTO, UpdateOfferDTO } from '../dtos/offer.js';
 import { ObjectIdMiddleware } from '../middleware/objectid.middleware.js';
 import { ValidateDtoMiddleware } from '../middleware/validate-dto.middleware.js';
+import { AuthService } from '../services/auth.service.js';
+import { AuthGuardMiddleware } from '../middleware/auth-guard.middleware.js';
 
 @injectable()
 export class OfferController extends Controller {
   constructor(
-    @inject('OfferServiceInterface') private offerService: OfferServiceInterface
+    @inject('OfferServiceInterface') private offerService: OfferServiceInterface,
+    @inject('AuthServiceInterface') private authService: AuthService
   ) {
     super();
     this.addRoute({
@@ -30,14 +33,24 @@ export class OfferController extends Controller {
       path: '/',
       method: 'post',
       handler: this.createOffer,
-      middlewares: [new ValidateDtoMiddleware(CreateOfferDTO), new ObjectIdMiddleware('authorId')]
+      middlewares: [new AuthGuardMiddleware(this.authService), new ValidateDtoMiddleware(CreateOfferDTO)]
     });
 
     this.addRoute({
       path: '/:offerId',
       method: 'patch',
       handler: this.updateOffer,
-      middlewares: [new ObjectIdMiddleware('offerId'), new ValidateDtoMiddleware(UpdateOfferDTO)]
+      middlewares: [new AuthGuardMiddleware(this.authService), new ObjectIdMiddleware('offerId'), new ValidateDtoMiddleware(UpdateOfferDTO)]
+    });
+
+    this.addRoute({
+      path: '/:offerId',
+      method: 'delete',
+      handler: this.deleteOffer,
+      middlewares: [
+        new AuthGuardMiddleware(this.authService),
+        new ObjectIdMiddleware('offerId')
+      ]
     });
   }
 
@@ -47,28 +60,69 @@ export class OfferController extends Controller {
   }
 
   private async getOfferById(req: Request, res: Response) {
-    const offer = await this.offerService.findById(req.body.id);
+    const { id } = req.params;
+    const offer = await this.offerService.findById(id);
+    if (!offer) {
+      return this.notFound(res, 'Offer not found');
+    }
     this.ok(res, offer);
   }
 
   private async createOffer(req: Request, res: Response) {
-    const offer = {
-      ...req.body,
+    const userId = req.user?.id;
+    if (!userId) {
+      return this.unauthorized(res, 'Not authenticated');
+    }
+
+    const dto = req.body as CreateOfferDTO;
+
+    const offerData = {
+      ...dto,
       publicationDate: new Date(),
-      author: req.body.authorId
-      // author: new userModel(), // TODO remove later
+      author: userId
     };
-    const newOffer = await this.offerService.create(offer);
+    const newOffer = await this.offerService.create(offerData);
     this.created(res, newOffer);
   }
 
   private async updateOffer(req: Request, res: Response) {
-    const offer = {
-      ...req.body,
-      publicationDate: new Date(),
-    };
-    const updatedOffer = await this.offerService.update(offer.id, offer);
+    const userId = req.user?.id;
+    if (!userId) {
+      return this.unauthorized(res, 'Not authenticated');
+    }
+
+    const { offerId } = req.params;
+
+    const existingOffer = await this.offerService.findById(offerId);
+    if (!existingOffer) {
+      return this.notFound(res, 'Offer not found');
+    }
+    if (existingOffer.author.toString() !== userId) {
+      return this.forbidden(res, 'You can update only your own offers');
+    }
+
+    const dto = req.body as UpdateOfferDTO;
+    const updatedOffer = await this.offerService.update(offerId, {
+      ...dto
+    });
     this.ok(res, updatedOffer);
+  }
+
+  private async deleteOffer(req: Request, res: Response) {
+    const userId = req.user?.id;
+    if (!userId) {
+      return this.unauthorized(res, 'Not authenticated');
+    }
+    const { offerId } = req.params;
+    const existingOffer = await this.offerService.findById(offerId);
+    if (!existingOffer) {
+      return this.notFound(res, 'Offer not found');
+    }
+    if (existingOffer.author.toString() !== userId) {
+      return this.forbidden(res, 'You can delete only your own offers');
+    }
+    await this.offerService.deleteById(offerId);
+    return this.noContent(res);
   }
 
 }

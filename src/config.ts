@@ -37,6 +37,12 @@ const config = convict({
     default: 'uploads',
     env: 'UPLOADS_DIRECTORY'
   },
+  jwtSecret: {
+    doc: 'JWT Secret Key',
+    format: String,
+    default: 'supersecret',
+    env: 'JWT_SECRET'
+  }
 });
 
 config.validate({ allowed: 'strict' });

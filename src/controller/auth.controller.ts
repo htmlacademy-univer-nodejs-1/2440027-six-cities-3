@@ -37,9 +37,13 @@ export class AuthController extends Controller {
   }
 
   private async login(req: Request, res: Response) {
-    const dto = req.body;
-    const token = await this.authService.login(dto);
-    this.ok(res, {token});
+    const dto = req.body as LoginDTO;
+    try {
+      const token = await this.authService.login(dto);
+      this.ok(res, { token });
+    } catch (err) {
+      this.unauthorized(res, (err as Error).message);
+    }
   }
 
   private async logout(req: Request, res: Response) {
@@ -47,7 +51,6 @@ export class AuthController extends Controller {
     if (!token) {
       return this.unauthorized(res, 'No token provided');
     }
-
     await this.authService.logout(token);
     this.noContent(res);
   }
@@ -57,12 +60,10 @@ export class AuthController extends Controller {
     if (!token) {
       return this.unauthorized(res, 'No token provided');
     }
-
     const user = await this.authService.verifyToken(token);
     if (!user) {
       return this.unauthorized(res, 'Invalid token');
     }
-
-    this.ok(res, {id: user.id, email: user.email, name: user.name});
+    this.ok(res, { id: user.id, email: user.email, name: user.name });
   }
 }

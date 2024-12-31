@@ -39,10 +39,9 @@ const offerSchema = new Schema<OfferDocument>(
     images: {
       type: [String],
       required: true,
-      // validate: [(val: string[]) => val.length === 6, 'Должно быть ровно 6 фотографий'],
     },
     isPremium: { type: Boolean, required: true },
-    isFavorite: { type: Boolean, required: true },
+    isFavorite: { type: Boolean, required: false, default: false },
     rating: { type: Number, required: true, min: 1, max: 5 },
     type: { type: String, enum: ['apartment', 'house', 'room', 'hotel'], required: true },
     bedrooms: { type: Number, required: true, min: 1, max: 8 },
