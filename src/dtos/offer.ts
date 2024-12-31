@@ -1,7 +1,8 @@
 import {
   IsString, Length, IsBoolean, IsNumber, IsEnum, IsInt, Min, Max, IsArray, ArrayMinSize,
   ValidateNested, IsNotEmpty,
-  IsOptional
+  IsOptional,
+  ArrayMaxSize
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -44,19 +45,18 @@ export class CreateOfferDTO {
     previewImage!: string;
 
   @IsArray()
-  @Length(6, 6, { each: false })
+  @ArrayMinSize(6)
+  @ArrayMaxSize(6)
   @IsString({ each: true })
     images!: string[];
 
   @IsBoolean()
     isPremium!: boolean;
 
-  @IsBoolean()
-    isFavorite!: boolean;
-
   @IsNumber({maxDecimalPlaces: 1})
   @Min(1)
   @Max(5)
+  @IsOptional()
     rating!: number;
 
   @IsString()
@@ -82,10 +82,6 @@ export class CreateOfferDTO {
   @IsString({ each: true })
   @ArrayMinSize(1)
     goods!: GoodType[];
-
-  @IsString()
-  @IsNotEmpty()
-    authorId!: string;
 
   @ValidateNested()
   @Type(() => LocationDTO)
@@ -113,19 +109,16 @@ export class UpdateOfferDTO {
   @IsString()
     previewImage?: string;
 
-  @IsOptional()
   @IsArray()
-  @Length(6, 6, { each: false })
+  @IsOptional()
+  @ArrayMinSize(6)
+  @ArrayMaxSize(6)
   @IsString({ each: true })
     images?: string[];
 
   @IsOptional()
   @IsBoolean()
     isPremium?: boolean;
-
-  @IsOptional()
-  @IsBoolean()
-    isFavorite?: boolean;
 
   @IsOptional()
   @IsNumber({maxDecimalPlaces: 1})

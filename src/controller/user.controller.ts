@@ -5,11 +5,14 @@ import { inject, injectable } from 'inversify';
 import { CreateUserDTO } from '../dtos/user.js';
 import { ValidateDtoMiddleware } from '../middleware/validate-dto.middleware.js';
 import { UploadFileMiddleware } from '../middleware/upload-file.middleware.js';
+import { AuthGuardMiddleware } from '../middleware/auth-guard.middleware.js';
+import { AuthService } from '../services/auth.service.js';
 
 @injectable()
 export class UserController extends Controller {
   constructor(
-    @inject('UserServiceInterface') private userService: UserServiceInterface
+    @inject('UserServiceInterface') private userService: UserServiceInterface,
+    @inject('AuthServiceInterface') private authService: AuthService
   ) {
     super();
 
@@ -25,6 +28,7 @@ export class UserController extends Controller {
       method: 'post',
       handler: this.uploadAvatar,
       middlewares: [
+        new AuthGuardMiddleware(this.authService),
         new UploadFileMiddleware('avatar'),
       ],
     });
@@ -41,7 +45,11 @@ export class UserController extends Controller {
     if (!req.file) {
       return this.badRequest(res, 'Файл не найден');
     }
-    const userId = '67573a3b5383bd44915946d7'; // пример тестового userId
+
+    const userId = req.user?.id;
+    if (!userId) {
+      return this.unauthorized(res, 'Not authenticated');
+    }
 
     const filePath = req.file.path;
 

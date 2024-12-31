@@ -13,6 +13,10 @@ import fs from 'node:fs';
 import { CommentController } from './controller/comment.controller.js';
 import { CommentService } from './services/comment.service.js';
 import path from 'node:path';
+import { AuthService } from './services/auth.service.js';
+import { AuthController } from './controller/auth.controller.js';
+import { FavoriteController } from './controller/favourite.controller.js';
+import { FavoriteService } from './services/favourite.service.js';
 
 
 @injectable()
@@ -21,19 +25,26 @@ export class Application {
   private offerController: OfferController;
   private userController: UserController;
   private commentController: CommentController;
+  private authController: AuthController;
+  private favouriteController: FavoriteController;
+
 
   constructor(
     @inject('LoggerInterface') private logger: LoggerInterface,
     @inject('DatabaseInterface') private database: DatabaseInterface,
     @inject('OfferServiceInterface') private offerService: OfferService,
     @inject('UserServiceInterface') private userService: UserService,
-    @inject('CommentServiceInterface') private commentService: CommentService
+    @inject('CommentServiceInterface') private commentService: CommentService,
+    @inject('AuthServiceInterface') private authService: AuthService,
+    @inject('FavoriteServiceInterface') private favouriteService: FavoriteService,
   ) {
     this.expressApp = express();
 
-    this.offerController = new OfferController(this.offerService);
-    this.userController = new UserController(this.userService);
-    this.commentController = new CommentController(this.commentService, this.offerService);
+    this.offerController = new OfferController(this.offerService, this.authService);
+    this.userController = new UserController(this.userService, this.authService);
+    this.commentController = new CommentController(this.commentService, this.offerService, this.authService);
+    this.authController = new AuthController(this.authService);
+    this.favouriteController = new FavoriteController(this.favouriteService, this.authService);
   }
 
   private registerMiddlewares() {
@@ -43,8 +54,9 @@ export class Application {
   private registerRoutes() {
     this.expressApp.use('/offers', this.offerController.getRouter());
     this.expressApp.use('/users', this.userController.getRouter());
-    this.expressApp.use('/', this.commentController.getRouter()); //  /offers/:offerId/comments
-
+    this.expressApp.use('/', this.commentController.getRouter());
+    this.expressApp.use('/auth', this.authController.getRouter());
+    this.expressApp.use('/favorites', this.favouriteController.getRouter());
 
     const yamlFile = fs.readFileSync('./specification/specification.yml', 'utf8');
     const swaggerDocument = YAML.parse(yamlFile);

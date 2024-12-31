@@ -7,12 +7,15 @@ import { ObjectIdMiddleware } from '../middleware/objectid.middleware.js';
 import { ValidateDtoMiddleware } from '../middleware/validate-dto.middleware.js';
 import { CheckEntityExistsMiddleware } from '../middleware/check-entity-exists.middleware.js';
 import { OfferServiceInterface } from '../services/offer-service-interface.js';
+import { AuthGuardMiddleware } from '../middleware/auth-guard.middleware.js';
+import { AuthService } from '../services/auth.service.js';
 
 @injectable()
 export class CommentController extends Controller {
   constructor(
     @inject('CommentServiceInterface') private commentService: CommentServiceInterface,
-    @inject('OfferServiceInterface') private offerService: OfferServiceInterface
+    @inject('OfferServiceInterface') private offerService: OfferServiceInterface,
+    @inject('AuthServiceInterface') private authService: AuthService
   ) {
     super();
     this.addRoute({
@@ -26,7 +29,12 @@ export class CommentController extends Controller {
       path: '/offers/:offerId/comments',
       method: 'post',
       handler: this.create,
-      middlewares: [new ObjectIdMiddleware('offerId'), new CheckEntityExistsMiddleware('offerId', this.offerService, 'Offer'), new ValidateDtoMiddleware(CreateCommentDTO)]
+      middlewares: [
+        new AuthGuardMiddleware(this.authService),
+        new ObjectIdMiddleware('offerId'),
+        new CheckEntityExistsMiddleware('offerId', this.offerService, 'Offer'),
+        new ValidateDtoMiddleware(CreateCommentDTO),
+      ]
     });
   }
 
@@ -38,7 +46,12 @@ export class CommentController extends Controller {
 
   private async create(req: Request, res: Response) {
     const { offerId } = req.params;
-    const userId = 'mocked-user-id';
+
+    const userId = req.user?.id;
+    if (!userId) {
+      return this.unauthorized(res, 'Not authenticated');
+    }
+
     const dto = req.body as CreateCommentDTO;
     const comment = await this.commentService.create(offerId, userId, dto);
     this.created(res, comment);
