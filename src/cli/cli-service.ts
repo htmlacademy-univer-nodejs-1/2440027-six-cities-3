@@ -31,7 +31,7 @@ export class CliService {
         this.logger.info('Команды:\n');
         this.logger.info(chalk.yellow(' --version:                   # выводит номер версии'));
         this.logger.info(chalk.yellow(' --help:                      # печатает этот текст'));
-        this.logger.info(chalk.yellow(' --import <path>:             # импортирует данные из TSV'));
+        this.logger.info(chalk.yellow(' --import <path> <dbUri>:             # импортирует данные из TSV'));
         this.logger.info(chalk.yellow(' --generate <n> <path> <url>  # генерирует произвольное количество тестовых данных'));
         break;
 
@@ -87,7 +87,7 @@ export class CliService {
             maxAdults: offerData.maxAdults,
             price: offerData.price,
             goods: offerData.goods as GoodType[],
-            authorId: user.id.toString(),
+            author: user,
             location: {
               latitude: offerData.latitude,
               longitude: offerData.longitude,

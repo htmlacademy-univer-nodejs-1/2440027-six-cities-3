@@ -6,8 +6,8 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-const Cities = ['Paris', 'Cologne', 'Brussels', 'Amsterdam', 'Hamburg', 'Dusseldorf'] as const;
-type CityType = typeof Cities[number];
+export const Cities = ['Paris', 'Cologne', 'Brussels', 'Amsterdam', 'Hamburg', 'Dusseldorf'] as const;
+export type CityType = typeof Cities[number];
 
 const OfferTypes = ['apartment', 'house', 'room', 'hotel'] as const;
 type OfferType = typeof OfferTypes[number];

@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { Controller } from '../controller/controller.js';
 import { OfferServiceInterface } from '../services/offer-service-interface.js';
 import { inject, injectable } from 'inversify';
-import { CreateOfferDTO, UpdateOfferDTO } from '../dtos/offer.js';
+import { Cities, CityType, CreateOfferDTO, UpdateOfferDTO } from '../dtos/offer.js';
 import { ObjectIdMiddleware } from '../middleware/objectid.middleware.js';
 import { ValidateDtoMiddleware } from '../middleware/validate-dto.middleware.js';
 import { AuthService } from '../services/auth.service.js';
@@ -15,6 +15,13 @@ export class OfferController extends Controller {
     @inject('AuthServiceInterface') private authService: AuthService
   ) {
     super();
+    this.addRoute({
+      path: '/premium/:city',
+      method: 'get',
+      handler: this.getPremiumOffers,
+      middlewares: []
+    });
+
     this.addRoute({
       path: '/:id',
       method: 'get',
@@ -125,4 +132,31 @@ export class OfferController extends Controller {
     return this.noContent(res);
   }
 
+  private async getPremiumOffers(req: Request, res: Response) {
+    const { city } = req.params;
+
+    if (!city) {
+      return this.badRequest(res, 'city query parameter is required');
+    }
+
+    if (!Cities.includes(city as CityType)) {
+      return this.badRequest(res, `Invalid city "${city}". Must be one of: ${Cities.join(', ')}`);
+    }
+
+    const offers = await this.offerService.findPremiumByCity(city);
+
+    const result = offers.map((offer) => ({
+      price: offer.price,
+      title: offer.title,
+      type: offer.type,
+      isFavorite: false,
+      publicationDate: offer.publicationDate,
+      city: offer.city,
+      previewImage: offer.previewImage,
+      isPremium: offer.isPremium,
+      rating: offer.rating,
+      commentsCount: offer.commentsCount
+    }));
+    this.ok(res, result);
+  }
 }
