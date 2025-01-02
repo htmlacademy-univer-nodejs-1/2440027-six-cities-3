@@ -11,7 +11,7 @@ const config = convict({
     doc: 'Номер порта для сервера',
     format: 'port',
     default: undefined,
-    env: 'DB_PORT',
+    env: 'SERVER_PORT',
   },
   dbHost: {
     doc: 'IP-адрес сервера базы данных',

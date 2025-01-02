@@ -16,6 +16,7 @@ import { FavoriteServiceInterface } from './services/favourite-service-interface
 import { FavoriteService } from './services/favourite.service.js';
 import { AuthServiceInterface } from './services/auth-service-interface.js';
 import { AuthService } from './services/auth.service.js';
+import { ErrorMiddleware } from './middleware/error.middleware.js';
 
 const container = new Container();
 
@@ -28,5 +29,6 @@ container.bind<OfferServiceInterface>('OfferServiceInterface').to(OfferService).
 container.bind<CommentServiceInterface>('CommentServiceInterface').to(CommentService).inSingletonScope();
 container.bind<FavoriteServiceInterface>('FavoriteServiceInterface').to(FavoriteService).inSingletonScope();
 container.bind<AuthServiceInterface>('AuthServiceInterface').to(AuthService).inSingletonScope();
+container.bind<ErrorMiddleware>('ErrorMiddleware').to(ErrorMiddleware).inSingletonScope();
 
 export default container;

@@ -21,11 +21,6 @@ export class CheckEntityExistsMiddleware<EntityType> implements MiddlewareInterf
         return;
       }
 
-      //
-      // (req as any).entity = entity;
-      //
-      // но это опционально
-
       return next();
 
     } catch (err) {

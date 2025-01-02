@@ -4,6 +4,7 @@ import { injectable } from 'inversify';
 import bcrypt from 'bcrypt';
 import { CreateUserDTO } from '../dtos/user.js';
 import config from '../config.js';
+import { ConflictError } from '../errors/errors.js';
 
 @injectable()
 export class UserService implements UserServiceInterface {
@@ -16,6 +17,11 @@ export class UserService implements UserServiceInterface {
   }
 
   public async create(dto: Partial<CreateUserDTO>): Promise<UserDocument> {
+    const existingUser = await UserModel.findOne({ email: dto.email }).exec();
+    if (existingUser) {
+      throw new ConflictError('Пользователь с таким email уже существует.');
+    }
+
     const SALT_ROUNDS = +config.get('salt')! || 10;
     const passwordHash = await bcrypt.hash(dto.password!, SALT_ROUNDS);
 

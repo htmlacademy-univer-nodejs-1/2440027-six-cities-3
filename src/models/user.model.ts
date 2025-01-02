@@ -14,7 +14,7 @@ const userSchema = new Schema<UserDocument>(
   {
     name: { type: String, required: true, minlength: 1, maxlength: 15 },
     email: { type: String, required: true, unique: true },
-    avatarUrl: { type: String },
+    avatarUrl: { type: String, default: '/path/to/default.png' },
     passwordHash: { type: String, required: true},
     userType: { type: String, enum: ['regular', 'pro'], required: true },
   },

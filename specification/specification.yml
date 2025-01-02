@@ -31,6 +31,42 @@ paths:
         '409':
           description: Пользователь с таким email уже существует.
 
+  /users/avatar:
+    post:
+      summary: Загрузка аватара пользователя
+      description: Позволяет авторизованному пользователю загрузить аватар (файл).
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: multipart/form-data с полем "avatar" — файл картинки
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Аватар успешно загружен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  avatarPath:
+                    type: string
+        '400':
+          description: Нет файла или ошибка запроса
+        '401':
+          description: Не авторизован
+        '404':
+          description: Пользователь не найден
+
   /auth/login:
     post:
       summary: Вход в закрытую часть приложения
@@ -54,12 +90,12 @@ paths:
   /auth/logout:
     post:
       summary: Выход из закрытой части приложения
-      description: Завершение сессии пользователя (если используется сессионная аутентификация).
+      description: Завершение сессии пользователя (если используется сессионная аутентификация, при JWT обычно пустой).
       security:
         - bearerAuth: []
       responses:
         '204':
-          description: Сессия завершена.
+          description: Сессия завершена (или запрос на логаут выполнен).
         '401':
           description: Не авторизован.
 
@@ -124,10 +160,35 @@ paths:
         '401':
           description: Не авторизован
 
+  /offers/premium/{city}:
+    get:
+      summary: Список премиальных предложений для города
+      description: Возвращает не более 3 премиальных предложений по убыванию даты. Доступно авторизованным и анонимным клиентам.
+      parameters:
+        - in: path
+          name: city
+          required: true
+          schema:
+            type: string
+            enum: [Paris, Cologne, Brussels, Amsterdam, Hamburg, Dusseldorf]
+      responses:
+        '200':
+          description: Список премиальных предложений
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OfferShort'
+        '400':
+          description: Некорректный город
+        '404':
+          description: Нет предложений
+
   /offers/{offerId}:
     get:
       summary: Детальная информация по одному предложению
-      description: Возвращает детальную информацию по предложению, включая признак избранности.
+      description: Возвращает детальную информацию по предложению, включая признак избранности (если нужно).
       parameters:
         - in: path
           name: offerId
@@ -251,29 +312,6 @@ paths:
           description: Не авторизован
         '404':
           description: Предложение не найдено
-
-  /offers/{city}/premium:
-    get:
-      summary: Список премиальных предложений для города
-      description: Возвращает не более 3 премиальных предложений по убыванию даты. Доступно авторизованным и анонимным клиентам.
-      parameters:
-        - in: path
-          name: city
-          required: true
-          schema:
-            type: string
-            enum: [Paris, Cologne, Brussels, Amsterdam, Hamburg, Dusseldorf]
-      responses:
-        '200':
-          description: Список премиальных предложений
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/OfferShort'
-        '404':
-          description: Город не найден или нет предложений
 
   /favorites:
     get:
@@ -407,11 +445,14 @@ components:
           enum: [apartment, house, room, hotel]
         isFavorite:
           type: boolean
+          description: Флаг, является ли предложение избранным для текущего пользователя
         isPremium:
           type: boolean
         rating:
           type: number
           format: float
+          minimum: 1
+          maximum: 5
         city:
           type: string
           enum: [Paris, Cologne, Brussels, Amsterdam, Hamburg, Dusseldorf]
@@ -488,13 +529,19 @@ components:
           maxItems: 6
         isPremium:
           type: boolean
-        isFavorite:
-          type: boolean
+          description: Флаг премиальности (true = Premium)
+          default: false
+        # Убираем isFavorite — рассчитывается логикой избранного
+        # isFavorite:
+        #   type: boolean
+        #   default: false
         rating:
           type: number
           format: float
           minimum: 1
           maximum: 5
+          nullable: true
+          description: Рейтинг можно передать, но чаще пересчитывается по комментариям
         type:
           type: string
           enum: [apartment, house, room, hotel]
@@ -528,8 +575,6 @@ components:
         - previewImage
         - images
         - isPremium
-        - isFavorite
-        - rating
         - type
         - bedrooms
         - maxAdults

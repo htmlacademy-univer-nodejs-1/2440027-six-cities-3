@@ -17,6 +17,8 @@ import { AuthService } from './services/auth.service.js';
 import { AuthController } from './controller/auth.controller.js';
 import { FavoriteController } from './controller/favourite.controller.js';
 import { FavoriteService } from './services/favourite.service.js';
+import cors from 'cors';
+import { ErrorMiddleware } from './middleware/error.middleware.js';
 
 
 @injectable()
@@ -27,6 +29,7 @@ export class Application {
   private commentController: CommentController;
   private authController: AuthController;
   private favouriteController: FavoriteController;
+  private errorMiddleware: ErrorMiddleware;
 
 
   constructor(
@@ -37,6 +40,7 @@ export class Application {
     @inject('CommentServiceInterface') private commentService: CommentService,
     @inject('AuthServiceInterface') private authService: AuthService,
     @inject('FavoriteServiceInterface') private favouriteService: FavoriteService,
+    @inject('ErrorMiddleware') errorMiddlewareInstance: ErrorMiddleware
   ) {
     this.expressApp = express();
 
@@ -45,10 +49,13 @@ export class Application {
     this.commentController = new CommentController(this.commentService, this.offerService, this.authService);
     this.authController = new AuthController(this.authService);
     this.favouriteController = new FavoriteController(this.favouriteService, this.authService);
+
+    this.errorMiddleware = errorMiddlewareInstance;
   }
 
   private registerMiddlewares() {
     this.expressApp.use(express.json());
+    this.expressApp.use(cors());
   }
 
   private registerRoutes() {
@@ -70,6 +77,10 @@ export class Application {
     this.expressApp.use('/static', express.static(path.resolve(uploadsDir)));
   }
 
+  private registerErrorHandling() {
+    this.expressApp.use(this.errorMiddleware.execute.bind(this.errorMiddleware));
+  }
+
   public async init() {
     const port = config.get('port');
     this.logger.info(`Приложение запустилось; порт сервера ${port}`);
@@ -80,6 +91,7 @@ export class Application {
     this.registerMiddlewares();
     this.registerRoutes();
     this.registerStatic();
+    this.registerErrorHandling();
 
     this.expressApp.listen(port, () => {
       this.logger.info(`Сервер запущен на порту ${port}`);

@@ -29,7 +29,6 @@ export async function generateOffers(n: number, filepath: string, url: string): 
       const newOffer = generateRandomOffer(randomBaseOffer);
       offers.push(newOffer);
     }
-    console.log(offers[0].author);
 
     const tsvData = offers
       .map((offer) => [
